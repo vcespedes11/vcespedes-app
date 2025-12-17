@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Registrar gasto</h1>
+      <p class="small mb-0">Ingresa una compra, impuesto, envío u otro gasto.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('gastos_index') }}" class="btn btn-outline-light btn-sm">
+        ← Volver a gastos
+      </a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="card card-panel">
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('gastos_nuevo') }}">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Fecha</label>
+            <input type="date" name="fecha" class="form-control"
+                   value="{{ hoy.strftime('%Y-%m-%d') }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Categoría</label>
+            <select name="categoria" class="form-select" required>
+              {% for c in categorias %}
+                <option value="{{ c }}">{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Detalle</label>
+            <input type="text" name="detalle" class="form-control" placeholder="Ej. Compra de N°31, envío por Starken, IVA SII, etc.">
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-4">
+            <label class="form-label">Monto (CLP)</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="text" name="monto" id="monto" class="form-control" required placeholder="0">
+            </div>
+            <small class="text-muted">Se formateará con puntos de miles automáticamente.</small>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-accent">Guardar gasto</button>
+          <a href="{{ url_for('gastos_index') }}" class="btn btn-outline-light">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+// Formateo de miles mientras escribes (igual que en precios)
+(function () {
+  const input = document.getElementById('monto');
+  if (!input) return;
+
+  const limpiar = (v) => v.replace(/\D/g, '');
+
+  const formatear = (v) => {
+    if (!v) return '';
+    return v.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
+  input.addEventListener('input', () => {
+    const limpio = limpiar(input.value);
+    input.value = formatear(limpio);
+  });
+})();
+</script>
+
+{% endblock %}

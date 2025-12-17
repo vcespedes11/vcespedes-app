@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{# Etiqueta dinámica para el tipo de precio #}
+{% if tienda.tipo_precio == 'menor' %}
+    {% set label_precio = 'Precio por menor' %}
+{% elif tienda.tipo_precio == 'mercadolibre' %}
+    {% set label_precio = 'Precio Mercado Libre' %}
+{% else %}
+    {% set label_precio = 'Precio concesión' %}
+{% endif %}
+
+{# Modo IVA normalizado (por si viene None) #}
+{% set modo_iva = tienda.iva_modo or 'incluido' %}
+
+<section class="mb-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1 text-light">{{ tienda.nombre }}</h1>
+      <p class="small mb-0 text-secondary">
+        {{ tienda.tipo }} · {{ tienda.ciudad or "Ciudad no especificada" }}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <form method="POST"
+            action="{{ url_for('tiendas_eliminar', tienda_id=tienda.id) }}"
+            onsubmit="return confirm('¿Eliminar esta {{ tienda.tipo|lower }}? Si tiene stock o ventas no se eliminará.');">
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+          Eliminar tienda
+        </button>
+      </form>
+
+      <a href="{{ url_for('tiendas_editar', tienda_id=tienda.id) }}"
+         class="btn btn-outline-info btn-sm">
+        Editar tienda
+      </a>
+
+      <a href="{{ url_for('tiendas_index') }}" class="btn btn-outline-light btn-sm">
+        ← Volver a tiendas
+      </a>
+      <a href="{{ url_for('tiendas_listar_ventas', tienda_id=tienda.id) }}"
+        class="btn btn-outline-warning btn-sm">
+        Ver / eliminar ventas
+      </a>
+    </div>
+  </div>
+
+  <!-- Mensajes flash -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {% for msg in messages %}
+          <div>{{ msg }}</div>
+        {% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- FORM ARRIBA: Asignar / actualizar stock -->
+  <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-2 text-light">Asignar / actualizar stock</h2>
+      <p class="small mb-3 text-secondary">
+        {% if tienda.fuente_stock_id %}
+          Elige un modelo y la cantidad que quieres agregar a esta {{ tienda.tipo|lower }}
+          desde la bodega de origen. El stock en la bodega se descontará automáticamente.
+        {% else %}
+          Elige un modelo y la cantidad que debe quedar registrada en esta {{ tienda.tipo|lower }}.
+          Si el modelo ya existe en el inventario, la cantidad se actualizará.
+        {% endif %}
+      </p>
+
+      <form method="POST" action="{{ url_for('tiendas_detalle', tienda_id=tienda.id) }}">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label text-light">Producto</label>
+            <select name="producto_id" class="form-select" required>
+              <option value="">Seleccione un modelo</option>
+              {% for p in productos %}
+                <option value="{{ p.id }}">{{ p.codigo }} · {{ p.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-light">Cantidad</label>
+            <input type="number" name="cantidad" class="form-control" required min="0">
+          </div>
+          <div class="col-md-3">
+            <button type="submit" class="btn btn-accent w-100">
+              Guardar stock
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Resúmenes de stock -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Modelos en esta {{ tienda.tipo|lower }}</p>
+          <p class="h3 mb-0 text-light">{{ total_modelos }}</p>
+          <p class="small mb-0 text-secondary">líneas de inventario</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Unidades totales en tienda</p>
+          <p class="h3 mb-0 text-light">{{ total_unidades }}</p>
+          <p class="small mb-0 text-secondary">cuchillos registrados</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Valor stock ({{ label_precio }})</p>
+          <p class="h5 mb-0 text-light">
+              ${{ total_valor_stock|clp }}
+          </p>
+          <p class="small mb-0 text-secondary">CLP aprox.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen ventas del mes en 4 cards -->
+  <div class="row g-3 mb-3">
+
+    <!-- Card 1: cantidad de cuchillos -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-muted">
+            Ventas del mes ({{ inicio_mes.strftime('%m-%Y') }})
+          </p>
+          <p class="h4 mb-0 text-light">
+            {{ total_vendidos_unidades }} cuchillos
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: total neto vendido -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-muted">
+            Total neto vendido
+          </p>
+          <p class="h4 mb-0 text-light">
+            ${{ total_vendidos_monto|clp }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: IVA -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          {% if modo_iva == 'no' %}
+            <p class="small mb-1 text-muted">
+              IVA 19% (no aplica)
+            </p>
+            <p class="h4 mb-0 text-light">
+              ${{ 0|clp }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Esta tienda no paga ni cobra IVA.
+            </p>
+          {% elif modo_iva == 'extra' %}
+            <p class="small mb-1 text-muted">
+              IVA 19% cobrado al cliente
+            </p>
+            <p class="h4 mb-0 text-light">
+              ${{ total_iva|clp }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Calculado sobre el total neto.
+            </p>
+          {% else %}
+            <p class="small mb-1 text-muted">
+              IVA 19% incluido en ventas
+            </p>
+            <p class="h4 mb-0 text-light">
+              ${{ total_iva|clp }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Estimación del IVA dentro del monto recibido.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: total con IVA -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          {% if modo_iva == 'no' %}
+            <p class="small mb-1 text-muted">
+              Total facturado (sin IVA)
+            </p>
+            <p class="h4 mb-0 text-light">
+              ${{ total_con_iva|clp }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Estas ventas no generan IVA.
+            </p>
+          {% elif modo_iva == 'extra' %}
+            <p class="small mb-1 text-muted">
+              Total facturado (neto + IVA)
+            </p>
+            <p class="h4 mb-0 text-light">
+              ${{ total_con_iva|clp }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Suma de neto vendido + IVA cobrado.
+            </p>
+          {% else %}
+            <p class="small mb-1 text-muted">
+              Total ventas (monto recibido)
+            </p>
+            <p class="h4 mb-0 text-light">
+              ${{ total_con_iva|clp }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Incluye IVA dentro del total.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tabla inventario -->
+  <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-3 text-light">Inventario de cuchillos</h2>
+      <div class="table-responsive">
+        <table class="table table-sm table-dark align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th class="text-end">
+                {% if tienda.tipo_precio == 'menor' %}
+                    Precio por menor
+                {% elif tienda.tipo_precio == 'mercadolibre' %}
+                    Precio Mercado Libre
+                {% else %}
+                    Precio concesión
+                {% endif %}
+              </th>
+              <th class="text-end">Cantidad en tienda</th>
+              <th class="text-end">Valor stock</th>
+              <th class="text-end">Vendidos mes</th>
+              <th class="text-end">Monto vendido mes</th>
+              <th class="text-end">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in stocks %}
+              {% set venta_info = ventas_por_producto.get(s.producto.id) %}
+              {% set vendidos = venta_info.cantidad if venta_info else 0 %}
+              {% set monto_vendido = venta_info.monto if venta_info else 0 %}
+
+              {% if tienda.tipo_precio == "menor" %}
+                  {% set precio_unitario = s.producto.precio_menor %}
+              {% elif tienda.tipo_precio == "mercadolibre" %}
+                  {% set precio_unitario = s.producto.precio_mercadolibre %}
+              {% else %}
+                  {% set precio_unitario = s.producto.precio_concesion %}
+              {% endif %}
+
+              <tr>
+                <td>{{ s.producto.codigo }}</td>
+                <td>{{ s.producto.nombre }}</td>
+                <td class="text-end">
+                  ${{ precio_unitario|clp }}
+                </td>
+                <td class="text-end">{{ s.cantidad }}</td>
+                <td class="text-end">
+                  ${{ (precio_unitario * s.cantidad)|clp }}
+                </td>
+                <td class="text-end">
+                  {{ vendidos }}
+                </td>
+                <td class="text-end">
+                  ${{ monto_vendido|clp }}
+                </td>
+                <td class="text-end">
+                  <a href="{{ url_for('tiendas_registrar_venta',
+                                      tienda_id=tienda.id,
+                                      producto_id=s.producto.id) }}"
+                     class="btn btn-sm btn-outline-info me-1">
+                    Ventas
+                  </a>
+                  <a href="{{ url_for('tiendas_sacar_stock',
+                                      tienda_id=tienda.id,
+                                      producto_id=s.producto.id) }}"
+                      class="btn btn-sm btn-outline-warning">
+                    Sacar stock
+                  </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="8" class="text-center small">
+                  Esta {{ tienda.tipo|lower }} aún no tiene productos asignados.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# Modelos vendidos sin stock #}
+  {% if agotados %}
+    <div class="card card-panel mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3 text-light">Modelos vendidos sin stock</h2>
+        <p class="small text-secondary mb-2">
+          Modelos que tuvieron ventas en esta {{ tienda.tipo|lower }} y actualmente están en 0 unidades.
+        </p>
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th class="text-end">Vendidos (histórico)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in agotados %}
+                <tr>
+                  <td>{{ item.producto.codigo }}</td>
+                  <td>{{ item.producto.nombre }}</td>
+                  <td class="text-end">
+                    {{ item.vendidas }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  {% if cuotas_activas %}
+    <div class="card card-panel mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3 text-light">Ventas en cuotas pendientes</h2>
+        <p class="small text-secondary mb-2">
+          Cuchillos vendidos en cuotas que aún tienen pagos por realizar. Cuando se pagan todas las cuotas, desaparecen de este listado.
+        </p>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th class="text-end">Total venta</th>
+                <th class="text-end">Cuotas</th>
+                <th class="text-end">Pagadas</th>
+                <th class="text-end">Valor cuota</th>
+                <th class="text-end">Pagado</th>
+                <th class="text-end">Pendiente</th>
+                <th class="text-end">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in cuotas_activas %}
+                {% set v = item.venta %}
+                {% set p = item.producto %}
+                <tr>
+                  <td class="small">
+                    {{ v.fecha.strftime('%d-%m-%Y %H:%M') if v.fecha else '-' }}
+                  </td>
+                  <td>
+                    {{ v.producto_codigo_snapshot or p.codigo }} ·
+                    {{ v.producto_nombre_snapshot or p.nombre }}
+                  </td>
+                  <td class="text-end">
+                    ${{ v.total|clp }}
+                  </td>
+                  <td class="text-end">
+                    {{ v.cuotas_totales or 0 }}
+                  </td>
+                  <td class="text-end">
+                    {{ v.cuotas_pagadas or 0 }}
+                  </td>
+                  <td class="text-end">
+                    ${{ item.valor_cuota|clp }}
+                  </td>
+                  <td class="text-end">
+                    ${{ v.monto_pagado|clp }}
+                  </td>
+                  <td class="text-end">
+                    ${{ item.monto_pendiente|clp }}
+                  </td>
+                  <td class="text-end">
+                    <form method="POST"
+                          action="{{ url_for('tiendas_pagar_cuota',
+                                             tienda_id=tienda.id,
+                                             venta_id=v.id) }}"
+                          onsubmit="return confirm('¿Registrar el pago de una cuota para esta venta?');">
+                      <button type="submit"
+                              class="btn btn-sm btn-outline-success"
+                              {% if (v.cuotas_totales and v.cuotas_pagadas >= v.cuotas_totales) or item.monto_pendiente <= 0 %}
+                                disabled
+                              {% endif %}>
+                        Pagar cuota
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  {% endif %}
+  {# Ventas en cuotas / cuotas por cobrar (sección nueva) #}
+  {% if ventas_cuotas is defined and ventas_cuotas %}
+    <div class="card card-panel mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3 text-light">Ventas en cuotas / cuotas por cobrar</h2>
+        <p class="small text-secondary mb-2">
+          Aquí se listan las ventas en cuotas que aún tienen saldo pendiente. Cada pago que registres se sumará a tus ingresos reales.
+        </p>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Fecha venta</th>
+                <th>Producto</th>
+                <th class="text-end">Total venta</th>
+                <th class="text-end">Cuotas</th>
+                <th class="text-end">Pagado</th>
+                <th class="text-end">Saldo</th>
+                <th class="text-end">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in ventas_cuotas %}
+                {% set cuotas_totales = v.cuotas_totales or 0 %}
+                {% set cuotas_pagadas = v.cuotas_pagadas or 0 %}
+                {% set monto_pagado = v.monto_pagado or 0 %}
+                {% set saldo = (v.total or 0) - monto_pagado %}
+
+                <tr>
+                  <td class="small">
+                    {{ v.fecha.strftime('%d-%m-%Y %H:%M') }}
+                  </td>
+                  <td>
+                    {{ v.producto_codigo_snapshot or v.producto.codigo }} ·
+                    {{ v.producto_nombre_snapshot or v.producto.nombre }}
+                  </td>
+                  <td class="text-end">
+                    ${{ v.total|clp }}
+                  </td>
+                  <td class="text-end">
+                    {{ cuotas_pagadas }}/{{ cuotas_totales }}
+                  </td>
+                  <td class="text-end">
+                    ${{ monto_pagado|clp }}
+                  </td>
+                  <td class="text-end">
+                    ${{ saldo|clp }}
+                  </td>
+                  <td class="text-end">
+                    <a href="{{ url_for('tiendas_pagar_cuota',
+                                        tienda_id=tienda.id,
+                                        venta_id=v.id) }}"
+                       class="btn btn-sm btn-outline-success">
+                      Registrar pago de cuota
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  {% endif %}
+
+</section>
+
+{% endblock %}

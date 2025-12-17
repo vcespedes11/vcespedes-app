@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Catálogo de productos</h1>
+            <p class="small mb-0">
+                Revisa tus modelos, filtra por tipo y acero, y entra al detalle de cada cuchillo.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('catalogo_nuevo') }}" class="btn btn-accent btn-sm">
+                + Agregar producto
+            </a>
+        </div>
+    </div>
+
+    {# Mensajes flash #}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          {% for msg in messages %}
+            <div>{{ msg }}</div>
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {# Filtros de búsqueda #}
+    <div class="card card-panel mb-3">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Buscar por código o nombre</label>
+                    <input type="text"
+                           name="q"
+                           class="form-control"
+                           placeholder="Ej: 31, corvo, chef..."
+                           value="{{ q }}">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Categoría principal</label>
+                    <select name="cat1" class="form-select">
+                        <option value="">Todas</option>
+                        {% for c in cat1_opciones %}
+                            <option value="{{ c }}" {% if c == cat1 %}selected{% endif %}>
+                                {{ c }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Categoría secundaria</label>
+                    <select name="cat2" class="form-select">
+                        <option value="">Todas</option>
+                        {% for c in cat2_opciones %}
+                            <option value="{{ c }}" {% if c == cat2 %}selected{% endif %}>
+                                {{ c }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Tipo de acero</label>
+                    <select name="acero" class="form-select">
+                        <option value="">Todos</option>
+                        {% for c in acero_opciones %}
+                            <option value="{{ c }}" {% if c == acero_filtro %}selected{% endif %}>
+                                {{ c }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-secondary btn-sm mt-3">
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if productos %}
+        <div class="row g-3">
+            {% for p in productos %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card card-panel h-100 hover-card"
+                         style="cursor: pointer;"
+                         onclick="window.location='{{ url_for('catalogo_ver', codigo=p.codigo) }}'">
+                        <div class="card-body d-flex flex-column">
+
+                            {# Mini imagen arriba #}
+                            <div class="mb-3"
+                                 style="background-color: #111; border-radius: 8px; padding: 8px; text-align: center; min-height: 120px;">
+                                {% if p.imagen %}
+                                    <img src="{{ url_for('static', filename=p.imagen) }}"
+                                         alt="{{ p.nombre }}"
+                                         style="max-width: 100%; max-height: 100px; object-fit: contain;">
+                                {% else %}
+                                    <span class="small text-muted">
+                                        Sin imagen
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-2">
+                                <p class="small text-accent mb-1">
+                                    {{ p.categoria_principal or "Sin categoría" }}
+                                    {% if p.categoria_secundaria %}
+                                        · {{ p.categoria_secundaria }}
+                                    {% endif %}
+                                </p>
+                                <h2 class="h6 mb-0">
+                                    {{ p.codigo }} · {{ p.nombre }}
+                                </h2>
+                            </div>
+
+                            <p class="small text-muted mb-2">
+                                Acero: {{ p.acero or "N/A" }} · Mango: {{ p.mango or "N/A" }}
+                            </p>
+
+                            <div class="small mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>Menor</span>
+                                    <span>${{ p.precio_menor|clp }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Concesión</span>
+                                    <span>${{ p.precio_concesion|clp }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Mercado Libre</span>
+                                    <span>${{ p.precio_mercadolibre|clp }}</span>
+                                </div>
+                            </div>
+
+                            {% if p.largo_hoja_cm or p.largo_mango_cm %}
+                                <p class="small text-muted mb-0">
+                                    {% if p.largo_hoja_cm %}Hoja: {{ p.largo_hoja_cm }} cm{% endif %}
+                                    {% if p.largo_hoja_cm and p.largo_mango_cm %} · {% endif %}
+                                    {% if p.largo_mango_cm %}Mango: {{ p.largo_mango_cm }} cm{% endif %}
+                                </p>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card card-panel">
+            <div class="card-body text-center small">
+                No hay productos en el catálogo con los filtros actuales.
+                <br>
+                Ajusta los filtros o usa el botón "Agregar producto" para crear uno nuevo.
+            </div>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

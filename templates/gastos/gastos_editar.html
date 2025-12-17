@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Editar gasto</h1>
+      <p class="small mb-0">Modifica la información del gasto seleccionado.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('gastos_index', year=gasto.fecha.year, month=gasto.fecha.month) }}"
+         class="btn btn-outline-light btn-sm">
+        ← Volver a gastos
+      </a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="card card-panel">
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('gastos_editar', gasto_id=gasto.id) }}">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Fecha</label>
+            <input type="date" name="fecha" class="form-control"
+                   value="{{ gasto.fecha.strftime('%Y-%m-%d') }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Categoría</label>
+            <select name="categoria" class="form-select" required>
+              {% for c in categorias %}
+                <option value="{{ c }}" {% if c == gasto.categoria %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Detalle</label>
+            <input type="text" name="detalle" class="form-control"
+                   value="{{ gasto.detalle or '' }}"
+                   placeholder="Ej. Compra N°31, envío Starken, IVA SII, etc.">
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-4">
+            <label class="form-label">Monto (CLP)</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="text" name="monto" id="monto" class="form-control" required
+                     value="{{ '{:,.0f}'.format(gasto.monto).replace(',', '.') }}">
+            </div>
+            <small class="text-muted">Se formatea con puntos de miles automáticamente.</small>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-accent">Guardar cambios</button>
+          <a href="{{ url_for('gastos_index', year=gasto.fecha.year, month=gasto.fecha.month) }}"
+             class="btn btn-outline-light">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+// Formateo de miles en el input monto
+(function () {
+  const input = document.getElementById('monto');
+  if (!input) return;
+
+  const limpiar = (v) => v.replace(/\D/g, '');
+  const formatear = (v) => v.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+  input.addEventListener('input', () => {
+    const limpio = limpiar(input.value);
+    input.value = formatear(limpio);
+  });
+})();
+</script>
+
+{% endblock %}

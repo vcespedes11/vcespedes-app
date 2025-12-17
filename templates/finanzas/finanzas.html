@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mb-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1 text-light">Finanzas</h1>
+      <p class="small mb-0 text-secondary">
+        Resumen de ingresos, gastos e IVA por año y gráficos para ver el movimiento mes a mes.
+      </p>
+    </div>
+
+    <!-- Selector de año -->
+    <form method="get" class="d-flex align-items-center gap-2">
+      <label class="small text-secondary mb-0">Año:</label>
+      <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+        {% for a in años %}
+          <option value="{{ a }}" {% if a == year %}selected{% endif %}>
+            {{ a }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  <!-- Resúmenes principales -->
+  <div class="row g-3 mb-3">
+    <!-- Ingresos -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Ingresos netos año</p>
+          <p class="h4 mb-0 text-light">
+            ${{ total_ventas|clp }}
+          </p>
+          <p class="small mb-0 text-secondary">Suma de todas las ventas registradas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gastos (número en rojo) -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Gastos año</p>
+          <p class="h4 mb-0">
+            <span class="text-danger">
+              ${{ total_gastos|clp }}
+            </span>
+          </p>
+          <p class="small mb-0 text-secondary">Según módulo de Gastos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado antes de IVA -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Resultado antes de IVA</p>
+          <p class="h4 mb-0 {% if utilidad_bruta >= 0 %}text-success{% else %}text-danger{% endif %}">
+            ${{ utilidad_bruta|clp }}
+          </p>
+          <p class="small mb-0 text-secondary">Ingresos − Gastos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- IVA débito (número en amarillo) -->
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">IVA débito estimado</p>
+          <p class="h4 mb-0">
+            <span class="text-warning">
+              ${{ total_iva|clp }}
+            </span>
+          </p>
+          <p class="small mb-0 text-secondary">
+            Solo tiendas con IVA incluido/extra
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultado después de IVA -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Resultado después de IVA</p>
+          <p class="h4 mb-0 {% if utilidad_despues_iva >= 0 %}text-success{% else %}text-danger{% endif %}">
+            ${{ utilidad_despues_iva|clp }}
+          </p>
+          <p class="small mb-0 text-secondary">
+            Ingresos − Gastos − IVA (referencial)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Meses clave -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Mejor mes en ventas</p>
+          <p class="h5 mb-0 text-light">
+            {{ mejor_mes_ventas_nombre }}
+          </p>
+          <p class="small mb-0 text-secondary">
+            Ventas: ${{ mejor_mes_ventas_monto|clp }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-panel h-100">
+          <div class="card-body">
+            <p class="small mb-1 text-secondary">Mes con más gastos</p>
+            <p class="h5 mb-0 text-light">
+              {{ mes_mas_gastos_nombre }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Gastos: ${{ mes_mas_gastos_monto|clp }}
+            </p>
+          </div>
+        </div>
+      </div>
+  
+      <div class="col-md-4">
+        <div class="card card-panel h-100">
+          <div class="card-body">
+            <p class="small mb-1 text-secondary">Peor resultado (ventas − gastos)</p>
+            <p class="h5 mb-0 text-light">
+              {{ peor_mes_resultado_nombre }}
+            </p>
+            <p class="small mb-0 text-secondary">
+              Resultado: ${{ peor_mes_resultado_monto|clp }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+     
+  
+    <!-- Ventas por tienda -->
+    <div class="card card-panel mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3 text-light">Ventas por tienda / vendedor ({{ year }})</h2>
+        {% if ventas_tiendas %}
+          <div class="table-responsive">
+            <table class="table table-sm table-dark align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Tienda / Vendedor</th>
+                  <th class="text-end">Ventas año</th>
+                  <th class="text-end">% del total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in ventas_tiendas %}
+                  {% if total_ventas > 0 %}
+                    {% set pct = (t.total * 100.0 / total_ventas) %}
+                  {% else %}
+                    {% set pct = 0 %}
+                  {% endif %}
+                  <tr>
+                    <td>{{ t.nombre }}</td>
+                    <td class="text-end">
+                      ${{ t.total|clp }}
+                    </td>
+                    <td class="text-end">
+                      {{ pct|round(1) }}%
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="small mb-0 text-secondary">
+            No hay ventas registradas para este año.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+ <!-- Gastos por categoría (solo tabla) -->
+ <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-3 text-light">Gastos por categoría ({{ year }})</h2>
+      {% if gastos_cat_labels %}
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">% del total</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% if gastos_cat_total > 0 %}
+                  {% for i in range(gastos_cat_labels|length) %}
+                    {% set label = gastos_cat_labels[i] %}
+                    {% set value = gastos_cat_data[i] %}
+                    {% set pct = (value * 100.0 / gastos_cat_total) %}
+                    <tr>
+                      <td>{{ label }}</td>
+                      <td class="text-end">
+                        ${{ value|clp }}
+                      </td>
+                      <td class="text-end">
+                        {{ pct|round(1) }}%
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="3" class="text-center small text-secondary">
+                      No hay gastos registrados para este año.
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+          </table>
+          
+        </div>
+      {% else %}
+        <p class="small mb-0 text-secondary">
+          No hay gastos registrados para este año.
+        </p>
+      {% endif %}
+      
+    </div>
+  </div>
+  
+
+  <!-- Gráfico línea: Ingresos vs Gastos vs IVA -->
+  <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-3 text-light">Ingresos vs Gastos por mes</h2>
+      <canvas id="finanzasLineChart" height="90"></canvas>
+    </div>
+  </div>
+
+ 
+</section>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Datos desde el backend
+  const ventasPorMes = {{ ventas_por_mes|tojson }};
+  const gastosPorMes = {{ gastos_por_mes|tojson }};
+  const ivaPorMes    = {{ iva_por_mes|tojson }};
+  const gastosCatLabels = {{ gastos_cat_labels|tojson }};
+  const gastosCatData   = {{ gastos_cat_data|tojson }};
+
+  const labelsMeses = [
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+  ];
+
+  // Gráfico Ingresos vs Gastos vs IVA
+  const ctxLine = document.getElementById('finanzasLineChart').getContext('2d');
+  new Chart(ctxLine, {
+    type: 'line',
+    data: {
+      labels: labelsMeses,
+      datasets: [
+        {
+          label: 'Ingresos netos',
+          data: ventasPorMes,
+          tension: 0.3
+        },
+        {
+          label: 'Gastos',
+          data: gastosPorMes,
+          tension: 0.3
+        },
+        {
+          label: 'IVA estimado',
+          data: ivaPorMes,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      stacked: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#ddd'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#aaa' },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#aaa' },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        }
+      }
+    }
+  });
+
+ // Gráfico de gastos por categoría (solo si existe el canvas)
+const canvasCat = document.getElementById('gastosCategoriaChart');
+
+if (canvasCat && gastosCatLabels.length > 0) {
+  const ctxCat = canvasCat.getContext('2d');
+
+  new Chart(ctxCat, {
+    type: 'doughnut',
+    data: {
+      labels: gastosCatLabels,
+      datasets: [{
+        data: gastosCatData
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: '#ddd' }
+        }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

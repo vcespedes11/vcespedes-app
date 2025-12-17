@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{# ============================= #}
+{#  MACRO: INFO DE CADA TIENDA   #}
+{# ============================= #}
+{% macro info_tienda(t) %}
+    {# Etiqueta del precio según tipo_precio de la tienda/bodega #}
+    {% if t.tipo_precio == 'concesion' %}
+        {% set label_precio = "Valor stock (concesión)" %}
+    {% elif t.tipo_precio == 'menor' %}
+        {% set label_precio = "Valor stock (por menor)" %}
+    {% elif t.tipo_precio == 'mercadolibre' %}
+        {% set label_precio = "Valor stock (Mercado Libre)" %}
+    {% else %}
+        {% set label_precio = "Valor stock" %}
+    {% endif %}
+
+    {# Namespace para acumular modelos, unidades y valor #}
+    {% set ns = namespace(modelos=0, unidades=0, valor=0) %}
+
+    {# Recorremos SOLO los stocks con cantidad > 0 #}
+    {% for s in t.stocks %}
+        {% set cant = s.cantidad or 0 %}
+        {% if cant > 0 %}
+            {# Contamos modelos y unidades #}
+            {% set ns.modelos = ns.modelos + 1 %}
+            {% set ns.unidades = ns.unidades + cant %}
+
+            {# Elegimos el precio según tipo_precio #}
+            {% if t.tipo_precio == 'concesion' %}
+                {% set precio = s.producto.precio_concesion %}
+            {% elif t.tipo_precio == 'menor' %}
+                {% set precio = s.producto.precio_menor %}
+            {% elif t.tipo_precio == 'mercadolibre' %}
+                {% set precio = s.producto.precio_mercadolibre %}
+            {% else %}
+                {% set precio = 0 %}
+            {% endif %}
+
+            {# Sumamos al valor total #}
+            {% set ns.valor = ns.valor + ((precio or 0) * cant) %}
+        {% endif %}
+    {% endfor %}
+
+    {# Vendido este mes: usamos el diccionario que viene desde app.py #}
+    {% set vendidos_mes = 0 %}
+    {% if ventas_mes_por_tienda is defined and ventas_mes_por_tienda %}
+        {% set vendidos_mes = ventas_mes_por_tienda.get(t.id, 0) %}
+    {% endif %}
+
+    <ul class="small mb-3 text-muted">
+        <li>Modelos: {{ ns.modelos }}</li>
+        <li>Unidades: {{ ns.unidades }}</li>
+        <li>{{ label_precio }}: ${{ ns.valor|clp }}</li>
+        <li>Vendido este mes: ${{ vendidos_mes|clp }}</li>
+    </ul>
+{% endmacro %}
+
+{% block content %}
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Tiendas y Bodegas</h1>
+            <p class="small mb-0">
+                Administrar bodegas, tiendas y vendedores.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('tiendas_nueva') }}" class="btn btn-accent btn-sm">
+                + Agregar tienda / bodega / vendedor
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          {% for msg in messages %}
+            <div>{{ msg }}</div>
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- ============================= -->
+    <!-- BODEGA CENTRAL -->
+    <!-- ============================= -->
+    <h5 class="text-light mt-4 mb-2">Bodega central</h5>
+    <div class="row g-3 mb-4">
+        {% for t in tiendas if t.tipo == "Bodega" and t.es_principal %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <a href="{{ url_for('tiendas_detalle', tienda_id=t.id) }}" class="text-decoration-none">
+                    <div class="card card-panel h-100 hover-card">
+                        <div class="card-body">
+                            <p class="small text-accent mb-1">{{ t.tipo }}</p>
+                            <h2 class="h6 mb-0">{{ t.nombre }}</h2>
+                            <p class="small text-muted mb-2">{{ t.ciudad or "Sin ciudad" }}</p>
+
+                            {{ info_tienda(t) }}
+
+                            <p class="small text-muted mt-3 mb-0">
+                                Click para ver inventario y ventas
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <hr class="border-secondary">
+
+    <!-- ============================= -->
+    <!-- OTRAS BODEGAS -->
+    <!-- ============================= -->
+    <h5 class="text-light mt-4 mb-2">Otras bodegas</h5>
+    <div class="row g-3 mb-4">
+        {% for t in tiendas if t.tipo == "Bodega" and not t.es_principal %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <a href="{{ url_for('tiendas_detalle', tienda_id=t.id) }}" class="text-decoration-none">
+                    <div class="card card-panel h-100 hover-card">
+                        <div class="card-body">
+                            <p class="small text-accent mb-1">{{ t.tipo }}</p>
+                            <h2 class="h6 mb-0">{{ t.nombre }}</h2>
+                            <p class="small text-muted mb-2">{{ t.ciudad or "Sin ciudad" }}</p>
+
+                            {{ info_tienda(t) }}
+
+                            <p class="small text-muted mt-3 mb-0">
+                                Click para ver inventario y ventas
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <hr class="border-secondary">
+
+    <!-- ============================= -->
+    <!-- TIENDAS -->
+    <!-- ============================= -->
+    <h5 class="text-light mt-4 mb-2">Tiendas</h5>
+    <div class="row g-3 mb-4">
+        {% for t in tiendas if t.tipo == "Tienda" %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <a href="{{ url_for('tiendas_detalle', tienda_id=t.id) }}" class="text-decoration-none">
+                    <div class="card card-panel h-100 hover-card">
+                        <div class="card-body">
+                            <p class="small text-accent mb-1">{{ t.tipo }}</p>
+                            <h2 class="h6 mb-0">{{ t.nombre }}</h2>
+                            <p class="small text-muted mb-2">{{ t.ciudad or "Sin ciudad" }}</p>
+
+                            {{ info_tienda(t) }}
+
+                            <p class="small text-muted mt-3 mb-0">
+                                Click para ver inventario y ventas
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <hr class="border-secondary">
+
+    <!-- ============================= -->
+    <!-- VENDEDORES -->
+    <!-- ============================= -->
+    <h5 class="text-light mt-4 mb-2">Vendedores</h5>
+    <div class="row g-3 mb-4">
+        {% for t in tiendas if t.tipo == "Vendedor" %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <a href="{{ url_for('tiendas_detalle', tienda_id=t.id) }}" class="text-decoration-none">
+                    <div class="card card-panel h-100 hover-card">
+                        <div class="card-body">
+                            <p class="small text-accent mb-1">{{ t.tipo }}</p>
+                            <h2 class="h6 mb-0">{{ t.nombre }}</h2>
+                            <p class="small text-muted mb-2">{{ t.ciudad or "Sin ciudad" }}</p>
+
+                            {{ info_tienda(t) }}
+
+                            <p class="small text-muted mt-3 mb-0">
+                                Click para ver inventario y ventas
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+</section>
+
+{% endblock %}

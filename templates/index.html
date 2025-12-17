@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Hero principal -->
+<section class="mb-4">
+  <div class="p-4 p-md-5 rounded-4 hero-panel">
+    <div class="row align-items-center">
+      <div class="col-md-7">
+        <p class="text-accent text-uppercase small mb-1">VCESPEDES · Cuchillos artesanales</p>
+        <h1 class="display-6 mb-2">
+          Panel de gestión de cuchillos y finanzas
+        </h1>
+        <p class="text-muted mb-4">
+          Administra tu catálogo, controla el stock por tienda y revisa las finanzas
+          de tu negocio en un solo lugar.
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <a href="#" class="btn btn-accent">
+            Ir al catálogo interno
+          </a>
+          <a href="{{ url_for('finanzas_index') }}" class="btn btn-outline-light">
+            Ir a finanzas
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-5 d-none d-md-block">
+        <div class="hero-knife-placeholder">
+          {% if resumen.best_img %}
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <img
+                  src="{{ url_for('static', filename=resumen.best_img) }}"
+                  alt="Cuchillo más vendido"
+                  class="img-fluid rounded shadow-sm"
+                  style="max-height: 220px; object-fit: contain;"
+                >
+              </div>
+              <div>
+                <p class="small text-accent mb-1">Cuchillo más vendido del mes</p>
+                {% if resumen.best_codigo or resumen.best_nombre %}
+                  <p class="small mb-1 text-light">
+                    {% if resumen.best_codigo %}
+                      {{ resumen.best_codigo }} · 
+                    {% endif %}
+                    {{ resumen.best_nombre }}
+                  </p>
+                {% endif %}
+                {% if resumen.best_cantidad_mes %}
+                  <p class="small mb-0 text-secondary">
+                    Vendido {{ resumen.best_cantidad_mes }} veces este mes
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+          {% else %}
+            <div class="d-flex align-items-center justify-content-center h-100">
+              <span class="text-muted small">
+                Imagen destacada de catálogo / cuchillo
+              </span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Resumen rápido -->
+<section class="mb-4">
+  <h2 class="h5 mb-3">Resumen rápido</h2>
+
+  <!-- Fila 1: 4 cards -->
+  <div class="row g-3 mb-3">
+    <!-- Stock total -->
+    <div class="col-6 col-lg-3">
+      <div class="card card-panel h-100">
+        <div class="card-body text-center">
+          <p class="card-title text-muted small mb-1">Stock total</p>
+          <p class="display-6 mb-0">{{ resumen.stock_total }}</p>
+          <p class="text-muted small mb-0">unidades en todas las tiendas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Valor inventario concesión -->
+    <div class="col-6 col-lg-3">
+      <div class="card card-panel h-100">
+        <div class="card-body text-center">
+          <p class="card-title text-muted small mb-1">Valor inventario (concesión)</p>
+          <p class="h4 mb-0">
+            ${{ resumen.valor_inventario_concesion|clp }}
+          </p>
+          <p class="text-muted small mb-0">precio base para tiendas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Valor inventario por menor -->
+    <div class="col-6 col-lg-3">
+      <div class="card card-panel h-100">
+        <div class="card-body text-center">
+          <p class="card-title text-muted small mb-1">Valor inventario (por menor)</p>
+          <p class="h4 mb-0">
+            ${{ resumen.valor_inventario_menor|clp }}
+          </p>
+          <p class="text-muted small mb-0">precio unitario cliente final</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ventas del mes -->
+    <div class="col-6 col-lg-3">
+      <div class="card card-panel h-100">
+        <div class="card-body text-center">
+          <p class="card-title text-muted small mb-1">Ventas del mes</p>
+          <p class="h4 mb-0">
+            ${{ resumen.ventas_mes|clp }}
+          </p>
+          <p class="text-muted small mb-0">monto total vendido</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 2: 3 cards -->
+  <div class="row g-3">
+    <!-- Tiendas activas -->
+    <div class="col-6 col-lg-3">
+      <div class="card card-panel h-100">
+        <div class="card-body text-center">
+          <p class="card-title text-muted small mb-1">Tiendas activas</p>
+          <p class="display-6 mb-0">{{ resumen.tiendas_activas }}</p>
+          <p class="text-muted small mb-0">tiendas / concesiones</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rotación de inventario -->
+    <div class="col-6 col-lg-3">
+      <div class="card card-panel h-100">
+        <div class="card-body text-center">
+          <p class="card-title text-muted small mb-1">Rotación del inventario</p>
+          <p class="h4 mb-0">
+            {{ resumen.rotacion_porcentaje }}%
+          </p>
+          <p class="text-muted small mb-0">
+            aprox. del stock vendido este mes
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 3 cuchillos del mes (más ancho) -->
+    <div class="col-12 col-lg-6">
+      <div class="card card-panel h-100">
+        <div class="card-body text-center">
+          <p class="card-title text-muted small mb-1">Top 3 cuchillos del mes</p>
+          {% if resumen.top3 and resumen.top3|length > 0 %}
+            <ol class="text-muted small mb-0 text-start" style="display:inline-block; text-align:left;">
+              {% for item in resumen.top3 %}
+                <li>
+                  {{ item.codigo }} · {{ item.nombre }} · {{ item.cantidad }} uds.
+                </li>
+              {% endfor %}
+            </ol>
+          {% else %}
+            <p class="text-muted small mb-0">
+              Aún no hay suficientes ventas este mes.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+  <div class="card card-panel" style="max-width: 420px; width: 100%;">
+    <div class="card-body">
+      <h1 class="h4 mb-3 text-light text-center">Ingresar a VCESPEDES</h1>
+      <p class="small text-secondary text-center mb-4">
+        Usa tu usuario y contraseña para acceder al panel.
+      </p>
+
+      <!-- Mensajes flash -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert alert-warning py-2 small" role="alert">
+            {% for msg in messages %}
+              <div>{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" autocomplete="off">
+        <div class="mb-3">
+          <label for="username" class="form-label small text-secondary">Usuario</label>
+          <input type="text" name="username" id="username"
+                 class="form-control form-control-sm"
+                 required>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label small text-secondary">Contraseña</label>
+
+          <!-- Campo con OJITO -->
+          <div class="input-group input-group-sm">
+            <input type="password" name="password" id="password"
+                   class="form-control"
+                   required>
+
+            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+              👁
+            </button>
+          </div>
+
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" value="1" id="remember" name="remember" checked>
+          <label class="form-check-label small text-secondary" for="remember">
+            Mantener sesión iniciada en este dispositivo
+          </label>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-accent btn-sm">
+            Entrar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- SCRIPT para ver / ocultar contraseña -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("password");
+    const btn = document.getElementById("togglePassword");
+
+    btn.addEventListener("click", function () {
+      const tipo = input.getAttribute("type");
+      input.setAttribute("type", tipo === "password" ? "text" : "password");
+    });
+  });
+</script>
+
+{% endblock %}

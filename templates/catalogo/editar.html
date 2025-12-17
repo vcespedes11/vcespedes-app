@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Editar producto: {{ producto.codigo }}</h1>
+            <p class="small mb-0">
+                Modifica la información del cuchillo. Si no cambias la imagen, se mantiene la actual.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('catalogo_ver', codigo=producto.codigo) }}" class="btn btn-outline-light btn-sm">
+                ← Volver al detalle
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          {% for msg in messages %}
+            <div>{{ msg }}</div>
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('catalogo_editar', codigo=producto.codigo) }}" enctype="multipart/form-data">
+        <div class="row g-3">
+            <!-- Código solo lectura -->
+            <div class="col-md-3">
+                <label class="form-label">Código</label>
+                <div class="input-group">
+                    <span class="input-group-text">N°</span>
+                    <input type="text" class="form-control" value="{{ producto.codigo[1:] }}" disabled>
+                </div>
+                <small class="text-muted">
+                    El código no se modifica desde aquí.
+                </small>
+            </div>
+
+            <div class="col-md-9">
+                <label class="form-label">Nombre del producto</label>
+                <input type="text" name="nombre" class="form-control" required
+                       value="{{ producto.nombre }}">
+            </div>
+
+            <!-- Categoría principal -->
+            <div class="col-md-4">
+                <label class="form-label">Categoría principal</label>
+                <select name="categoria_principal" class="form-select" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Cuchillo" {% if producto.categoria_principal == "Cuchillo" %}selected{% endif %}>Cuchillo</option>
+                    <option value="Cortapluma" {% if producto.categoria_principal == "Cortapluma" %}selected{% endif %}>Cortapluma</option>
+                    <option value="Espada" {% if producto.categoria_principal == "Espada" %}selected{% endif %}>Espada</option>
+                    <option value="Set de cuchillos" {% if producto.categoria_principal == "Set de cuchillos" %}selected{% endif %}>Set de cuchillos</option>
+                    <option value="Hacha" {% if producto.categoria_principal == "Hacha" %}selected{% endif %}>Hacha</option>
+                    <option value="Tabla de picar" {% if producto.categoria_principal == "Tabla de picar" %}selected{% endif %}>Tabla de picar</option>
+                </select>
+            </div>
+
+            <!-- Categoría secundaria (uso) -->
+            <div class="col-md-4">
+                <label class="form-label">Categoría secundaria (uso)</label>
+                <select name="categoria_secundaria" class="form-select">
+                    <option value="" {% if not producto.categoria_secundaria %}selected{% endif %}>Sin categoría secundaria</option>
+                    <option value="Cocina" {% if producto.categoria_secundaria == "Cocina" %}selected{% endif %}>Cocina</option>
+                    <option value="Asados" {% if producto.categoria_secundaria == "Asados" %}selected{% endif %}>Asados</option>
+                    <option value="Outdoor" {% if producto.categoria_secundaria == "Outdoor" %}selected{% endif %}>Outdoor / Camping</option>
+                    <option value="Colección" {% if producto.categoria_secundaria == "Colección" %}selected{% endif %}>Colección</option>
+                </select>
+            </div>
+
+            <!-- Tipo de acero -->
+            <div class="col-md-4">
+                <label class="form-label">Tipo de acero</label>
+                <select name="acero" class="form-select">
+                    <option value="" {% if not producto.acero %}selected{% endif %}>Seleccione...</option>
+                    <option value="Damasco" {% if producto.acero == "Damasco" %}selected{% endif %}>Damasco</option>
+                    <option value="Inoxidable" {% if producto.acero == "Inoxidable" %}selected{% endif %}>Inoxidable</option>
+                    <option value="Al carbono" {% if producto.acero == "Al carbono" %}selected{% endif %}>Al carbono</option>
+                </select>
+            </div>
+
+            <!-- Tipo de mango -->
+            <div class="col-md-4">
+                <label class="form-label">Tipo de mango</label>
+                <select name="mango" class="form-select">
+                    <option value="" {% if not producto.mango %}selected{% endif %}>Seleccione...</option>
+                    <option value="Madera" {% if producto.mango == "Madera" %}selected{% endif %}>Madera</option>
+                    <option value="Micarta" {% if producto.mango == "Micarta" %}selected{% endif %}>Micarta</option>
+                    <option value="Hueso" {% if producto.mango == "Hueso" %}selected{% endif %}>Hueso</option>
+                    <option value="Cuerno de toro" {% if producto.mango == "Cuerno de toro" %}selected{% endif %}>Cuerno de toro</option>
+                    <option value="Cuerno de ciervo" {% if producto.mango == "Cuerno de ciervo" %}selected{% endif %}>Cuerno de ciervo</option>
+                    <option value="Acero damasco" {% if producto.mango == "Acero damasco" %}selected{% endif %}>Acero damasco</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Longitud de hoja (cm)</label>
+                <input type="number" step="0.1" name="largo_hoja_cm" class="form-control"
+                       value="{{ producto.largo_hoja_cm or '' }}">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Longitud de mango (cm)</label>
+                <input type="number" step="0.1" name="largo_mango_cm" class="form-control"
+                       value="{{ producto.largo_mango_cm or '' }}">
+            </div>
+
+            <!-- Precios -->
+            <div class="col-md-4">
+                <label class="form-label">Precio al por menor</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="text" name="precio_menor"
+                           class="form-control precio-input"
+                           required
+                           value="{{ '{:,.0f}'.format(producto.precio_menor).replace(',', '.') }}">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Precio concesión</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="text" name="precio_concesion"
+                           class="form-control precio-input"
+                           required
+                           value="{{ '{:,.0f}'.format(producto.precio_concesion).replace(',', '.') }}">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Precio Mercado Libre</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="text" name="precio_mercadolibre"
+                           class="form-control precio-input"
+                           required
+                           value="{{ '{:,.0f}'.format(producto.precio_mercadolibre).replace(',', '.') }}">
+                </div>
+            </div>
+
+            <!-- Imagen actual + nueva imagen -->
+            <div class="col-md-6">
+                <label class="form-label">Imagen actual</label>
+                <div style="border: 1px dashed rgba(255,255,255,0.3);
+                            border-radius: 0.75rem;
+                            padding: 8px;
+                            min-height: 120px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;">
+                    {% if producto.imagen %}
+                        <img src="{{ url_for('static', filename=producto.imagen) }}"
+                             alt="{{ producto.nombre }}"
+                             style="max-width: 220px; max-height: 160px; border-radius: 0.5rem;">
+                    {% else %}
+                        <span class="text-muted small">Este producto aún no tiene imagen.</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6 d-flex flex-column">
+                <label class="form-label">Nueva imagen (opcional)</label>
+                <input type="file" name="imagen_file" id="imagen_file"
+                       class="form-control" accept="image/*">
+                <small class="text-muted">
+                    Si eliges una nueva imagen, reemplazará la actual.
+                </small>
+
+                <label class="form-label mt-3">Vista previa de nueva imagen</label>
+                <div id="preview-container"
+                     style="border: 1px dashed rgba(255,255,255,0.3);
+                            border-radius: 0.75rem;
+                            padding: 8px;
+                            min-height: 120px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;">
+                    <span id="preview-placeholder" class="text-muted small">
+                        Aún no has seleccionado ninguna imagen nueva.
+                    </span>
+                    <img id="preview-image"
+                         src=""
+                         alt="Vista previa"
+                         style="max-width: 220px;
+                                max-height: 160px;
+                                border-radius: 0.5rem;
+                                display: none;">
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-accent">Guardar cambios</button>
+        </div>
+    </form>
+</section>
+
+<!-- Script: vista previa + formato de precios -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Preview imagen nueva
+    const inputFile = document.getElementById("imagen_file");
+    const previewImage = document.getElementById("preview-image");
+    const previewPlaceholder = document.getElementById("preview-placeholder");
+
+    if (inputFile) {
+        inputFile.addEventListener("change", function () {
+            const file = this.files[0];
+
+            if (!file) {
+                previewImage.style.display = "none";
+                previewImage.src = "";
+                previewPlaceholder.style.display = "inline";
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+                alert("Por favor selecciona un archivo de imagen.");
+                this.value = "";
+                previewImage.style.display = "none";
+                previewImage.src = "";
+                previewPlaceholder.style.display = "inline";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = "block";
+                previewPlaceholder.style.display = "none";
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Formato automático de miles en los precios
+    const formatNumber = (numStr) => {
+        const clean = numStr.replace(/\D/g, "");
+        if (clean === "") return "";
+        return parseInt(clean, 10).toLocaleString("es-CL");
+    };
+
+    const priceInputs = document.querySelectorAll(".precio-input");
+    const form = document.querySelector("form");
+
+    priceInputs.forEach(input => {
+        input.addEventListener("input", function () {
+            const formatted = formatNumber(this.value);
+            this.value = formatted;
+            this.setSelectionRange(this.value.length, this.value.length);
+        });
+    });
+
+    if (form && priceInputs.length) {
+        form.addEventListener("submit", function () {
+            priceInputs.forEach(input => {
+                input.value = input.value.replace(/\D/g, "");
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

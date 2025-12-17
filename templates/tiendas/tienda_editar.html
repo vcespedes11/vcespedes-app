@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Editar tienda</h1>
+            <p class="small mb-0">
+                Modifica los datos de la tienda, su bodega de origen, tipo de precio y manejo de IVA.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('tiendas_detalle', tienda_id=tienda.id) }}" class="btn btn-outline-light btn-sm">
+                ← Volver al detalle
+            </a>
+        </div>
+    </div>
+
+    <div class="card card-panel">
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" name="nombre" class="form-control" value="{{ tienda.nombre }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo</label>
+                        <select name="tipo" class="form-select" required>
+                            <option value="Tienda" {{ "selected" if tienda.tipo == "Tienda" else "" }}>Tienda</option>
+                            <option value="Bodega" {{ "selected" if tienda.tipo == "Bodega" else "" }}>Bodega</option>
+                            <option value="Vendedor" {{ "selected" if tienda.tipo == "Vendedor" else "" }}>Vendedor</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Ciudad</label>
+                        <input type="text" name="ciudad" class="form-control" value="{{ tienda.ciudad or "" }}">
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Estado</label>
+                        <select name="activa" class="form-select">
+                            <option value="1" {{ "selected" if tienda.activa else "" }}>Activa</option>
+                            <option value="0" {{ "selected" if not tienda.activa else "" }}>Inactiva</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Bodega/tienda de origen del stock</label>
+                        <select name="fuente_stock_id" class="form-select">
+                            <option value="">Sin bodega fuente (origen)</option>
+                            {% for b in bodegas %}
+                                <option value="{{ b.id }}" {% if tienda.fuente_stock_id == b.id %}selected{% endif %}>
+                                    {{ b.nombre }} ({{ b.tipo }} · {{ b.ciudad or "sin ciudad" }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Precio de venta</label>
+                        <select name="tipo_precio" class="form-select">
+                            <option value="concesion" {{ "selected" if tienda.tipo_precio == "concesion" else "" }}>Precio concesión</option>
+                            <option value="menor" {{ "selected" if tienda.tipo_precio == "menor" else "" }}>Precio al por menor</option>
+                            <option value="mercadolibre" {{ "selected" if tienda.tipo_precio == "mercadolibre" else "" }}>Precio Mercado Libre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="iva_modo" class="form-label">IVA aplicado en esta tienda</label>
+                    <select name="iva_modo" id="iva_modo" class="form-select">
+                        <option value="incluido" {% if tienda.iva_modo == 'incluido' or not tienda.iva_modo %}selected{% endif %}>
+                            Precio incluye IVA (yo pago el IVA)
+                        </option>
+                        <option value="extra" {% if tienda.iva_modo == 'extra' %}selected{% endif %}>
+                            Precio + IVA (el cliente paga IVA aparte)
+                        </option>
+                        <option value="no" {% if tienda.iva_modo == 'no' %}selected{% endif %}>
+                            No se cobra / declara IVA en estas ventas
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-accent">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Nueva tienda / bodega / vendedor</h1>
+            <p class="small mb-0">
+                Crea una nueva tienda, bodega o vendedor y define su bodega de origen, tipo de precio y manejo de IVA.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('tiendas_index') }}" class="btn btn-outline-light btn-sm">
+                ← Volver a tiendas
+            </a>
+        </div>
+    </div>
+
+    <div class="card card-panel">
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo</label>
+                        <select name="tipo" class="form-select" required>
+                            <option value="Tienda">Tienda</option>
+                            <option value="Bodega">Bodega</option>
+                            <option value="Vendedor">Vendedor</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Ciudad</label>
+                        <input type="text" name="ciudad" class="form-control">
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Bodega/tienda de origen del stock</label>
+                        <select name="fuente_stock_id" class="form-select">
+                            <option value="">Sin bodega fuente (origen)</option>
+                            {% for b in bodegas %}
+                                <option value="{{ b.id }}">
+                                    {{ b.nombre }} ({{ b.tipo }} · {{ b.ciudad or "sin ciudad" }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <p class="small text-muted mt-1 mb-0">
+                            Ejemplo: Bodega Punta Arenas puede tener como origen la Bodega Central (Santiago).
+                        </p>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Precio de venta</label>
+                        <select name="tipo_precio" class="form-select">
+                            <option value="concesion">Precio concesión</option>
+                            <option value="menor">Precio al por menor</option>
+                            <option value="mercadolibre">Precio Mercado Libre</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="iva_modo" class="form-label">IVA aplicado en esta tienda</label>
+                        <select name="iva_modo" id="iva_modo" class="form-select">
+                            <option value="incluido">Precio incluye IVA (yo pago el IVA)</option>
+                            <option value="extra">Precio + IVA (el cliente paga IVA aparte)</option>
+                            <option value="no">No se cobra / declara IVA en estas ventas</option>
+                        </select>
+                        <div class="form-text">
+                            Por ejemplo:
+                            • Vendedores → “No”  
+                            • Tienda que te paga +IVA → “Precio + IVA”  
+                            • Tienda que te paga un monto cerrado y tú sacas el IVA desde ahí → “Incluye IVA”.
+                        </div>
+                    </div>
+
+                <div class="mt-4 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-accent">
+                        Guardar tienda
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

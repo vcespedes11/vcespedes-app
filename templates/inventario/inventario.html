@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mb-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1 text-light">Inventario general</h1>
+      <p class="small mb-0 text-secondary">
+        Resumen de stock total y ventas del mes para todos los modelos y todas las tiendas/bodegas.
+      </p>
+    </div>
+  </div>
+
+  <!-- Resúmenes principales -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Unidades totales</p>
+          <p class="h3 mb-0 text-light">{{ total_unidades }}</p>
+          <p class="small mb-0 text-secondary">suma de todas las tiendas y bodegas</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Modelos con stock</p>
+          <p class="h3 mb-0 text-light">{{ modelos_con_stock }}</p>
+          <p class="small mb-0 text-secondary">al menos 1 unidad disponible</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Modelos sin stock</p>
+          <p class="h3 mb-0 text-light">{{ modelos_sin_stock|length }}</p>
+          <p class="small mb-0 text-secondary">para revisar si vale la pena reponer</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Ventas del mes analizadas</p>
+          <p class="h4 mb-0 text-light">
+            {{ inicio_mes.strftime('%m-%Y') }}
+          </p>
+          <p class="small mb-0 text-secondary">basado en VentaTienda</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUEVAS CARDS -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Valor inventario (precio concesión)</p>
+          <p class="h4 mb-0 text-light">
+            ${{ valor_inv_concesion|clp }}
+          </p>
+          <p class="small mb-0 text-secondary">Todo el stock valorado al precio de concesión.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card card-panel h-100">
+        <div class="card-body">
+          <p class="small mb-1 text-secondary">Valor inventario (precio por menor)</p>
+          <p class="h4 mb-0 text-light">
+            ${{ valor_inv_menor|clp }}
+          </p>
+          <p class="small mb-0 text-secondary">Todo el stock valorado al precio por menor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top más vendidos del mes -->
+  <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-3 text-light">Top modelos más vendidos del mes</h2>
+
+      {% if top_vendidos %}
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th class="text-end">Vendidos mes</th>
+                <th class="text-end">Stock actual total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in top_vendidos %}
+                {% set p = item.producto %}
+                <tr>
+                  <td>{{ p.codigo }}</td>
+                  <td>{{ p.nombre }}</td>
+                  <td>{{ p.categoria_principal or '-' }}</td>
+                  <td class="text-end">{{ item.ventas_mes }}</td>
+                  <td class="text-end">{{ item.stock_total }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="small mb-0 text-secondary">
+          Aún no hay ventas registradas este mes.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recomendación de próxima compra -->
+  <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-3 text-light">Recomendación de próxima compra</h2>
+      <p class="small mb-3 text-secondary">
+        Basado en modelos que se están vendiendo y tienen poco stock.
+        Espadas se excluyen porque solo necesitas una como muestra.
+      </p>
+
+      {% if recomendados %}
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th class="text-end">Vendidos mes</th>
+                <th class="text-end">Stock actual</th>
+                <th class="text-end">Sugerencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in recomendados %}
+                {% set p = item.producto %}
+                <tr>
+                  <td>{{ p.codigo }}</td>
+                  <td>{{ p.nombre }}</td>
+                  <td>{{ p.categoria_principal or '-' }}</td>
+                  <td class="text-end">{{ item.ventas_mes }}</td>
+                  <td class="text-end">{{ item.stock_total }}</td>
+                  <td class="text-end">
+                    {% if item.ventas_mes >= 3 and item.stock_total <= item.ventas_mes %}
+                      <span class="badge bg-warning text-dark">Reponer urgente</span>
+                    {% else %}
+                      <span class="badge bg-info text-dark">Considerar compra</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="small mb-0 text-secondary">
+          Por ahora no hay modelos críticos según las reglas definidas.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Modelos sin stock -->
+  <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-3 text-light">Modelos sin stock</h2>
+      {% if modelos_sin_stock %}
+        <div class="row g-2">
+          {% for item in modelos_sin_stock %}
+            {% set p = item.producto %}
+            <div class="col-md-3 col-sm-4 col-6">
+              <div class="border rounded px-2 py-1 small text-secondary">
+                {{ p.codigo }} · {{ p.nombre }}
+                {% if item.es_espada %}
+                  <span class="badge bg-secondary ms-1">Espada</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="small mb-0 text-secondary">
+          No hay modelos completamente sin stock.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Tabla completa de inventario -->
+  <div class="card card-panel mb-3">
+    <div class="card-body">
+      <h2 class="h6 mb-3 text-light">Detalle completo de inventario</h2>
+      <div class="table-responsive">
+        <table class="table table-sm table-dark align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th class="text-end">Stock total</th>
+              <th class="text-end">Vendidos mes</th>
+              <th class="text-end">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in inventario %}
+              {% set p = item.producto %}
+              <tr>
+                <td>{{ p.codigo }}</td>
+                <td>{{ p.nombre }}</td>
+                <td>
+                  {{ p.categoria_principal or '-' }}
+                  {% if item.es_espada %}
+                    <span class="badge bg-secondary ms-1">Espada / vitrina</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">{{ item.stock_total }}</td>
+                <td class="text-end">{{ item.ventas_mes }}</td>
+                <td class="text-end">
+                  {% if item.stock_total == 0 %}
+                    <span class="badge bg-danger">Sin stock</span>
+                  {% elif item.ventas_mes >= 3 and item.stock_total <= item.ventas_mes %}
+                    <span class="badge bg-warning text-dark">Reponer pronto</span>
+                  {% else %}
+                    <span class="badge bg-success">OK</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+{% endblock %}

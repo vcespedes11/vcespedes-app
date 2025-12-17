@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Detalle de producto: {{ producto.codigo }}</h1>
+            <p class="text-muted small mb-0">
+                Vista del modelo, su imagen, medidas y precios.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('catalogo_editar', codigo=producto.codigo) }}"
+               class="btn btn-outline-info btn-sm">
+                Editar
+            </a>
+            <a href="{{ url_for('catalogo_eliminar', codigo=producto.codigo) }}"
+               class="btn btn-outline-danger btn-sm"
+               onclick="return confirm('¿Eliminar el producto {{ producto.codigo }}? Esta acción no se puede deshacer.');">
+                Eliminar
+            </a>
+            <a href="{{ url_for('catalogo_index') }}" class="btn btn-outline-light btn-sm">
+                ← Volver al catálogo
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-5">
+            <div class="card card-panel h-100">
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    {% if producto.imagen %}
+                        <img src="{{ url_for('static', filename=producto.imagen) }}"
+                             alt="{{ producto.nombre }}"
+                             style="max-width: 100%; max-height: 320px; border-radius: 12px; object-fit: contain;">
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            Este producto no tiene imagen asociada aún.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card card-panel h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-2">{{ producto.nombre }}</h2>
+                    <p class="text-muted small mb-2">
+                        Código: {{ producto.codigo }}
+                        · Tipo: {{ producto.categoria_principal or "Sin categoría" }}
+                        {% if producto.categoria_secundaria %}
+                            ({{ producto.categoria_secundaria }})
+                        {% endif %}
+                    </p>
+                    <p class="text-muted small mb-3">
+                        Acero: {{ producto.acero or "N/A" }}
+                        · Mango: {{ producto.mango or "N/A" }}
+                    </p>
+
+                    {% if producto.largo_hoja_cm or producto.largo_mango_cm %}
+                        <p class="text-muted small mb-3">
+                            {% if producto.largo_hoja_cm %}Hoja: {{ producto.largo_hoja_cm }} cm{% endif %}
+                            {% if producto.largo_hoja_cm and producto.largo_mango_cm %} · {% endif %}
+                            {% if producto.largo_mango_cm %}Mango: {{ producto.largo_mango_cm }} cm{% endif %}
+                        </p>
+                    {% endif %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-1">Precio al por menor</p>
+                            <p class="h5 mb-0">
+                                ${{ producto.precio_menor|clp }}
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-1">Precio concesión</p>
+                            <p class="h5 mb-0">
+                                ${{ producto.precio_concesion|clp }}
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-1">Precio Mercado Libre</p>
+                            <p class="h5 mb-0">
+                                ${{ producto.precio_mercadolibre|clp }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mb-0">
+                        Más adelante aquí podemos agregar descripción larga, notas de fabricación,
+                        proveedor, o cualquier otro dato que quieras guardar del modelo.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

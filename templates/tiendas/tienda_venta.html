@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Registrar venta</h1>
+            <p class="small mb-0">
+                {{ tienda.nombre }} · {{ producto.codigo }} · {{ producto.nombre }}
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('tiendas_detalle', tienda_id=tienda.id) }}"
+               class="btn btn-outline-light btn-sm">
+                ← Volver al inventario
+            </a>
+        </div>
+    </div>
+
+    {# Definimos etiqueta y valor según tipo_precio de la tienda #}
+    {% if tienda.tipo_precio == 'menor' %}
+        {% set label_precio = "Precio unitario (por menor)" %}
+        {% set valor_precio = producto.precio_menor %}
+    {% elif tienda.tipo_precio == 'mercadolibre' %}
+        {% set label_precio = "Precio unitario (Mercado Libre)" %}
+        {% set valor_precio = producto.precio_mercadolibre %}
+    {% else %}
+        {% set label_precio = "Precio unitario (concesión)" %}
+        {% set valor_precio = producto.precio_concesion %}
+    {% endif %}
+
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          {% for msg in messages %}
+            <div>{{ msg }}</div>
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="card card-panel">
+        <div class="card-body">
+            <p class="small mb-2">
+                Stock actual en esta tienda: <strong>{{ stock.cantidad }}</strong> unidades.
+            </p>
+            <p class="small mb-3">
+                {{ label_precio }} actual:
+                <strong>${{ valor_precio|clp }}</strong>
+            </p>
+
+            <form method="POST"
+                  action="{{ url_for('tiendas_registrar_venta',
+                                     tienda_id=tienda.id,
+                                     producto_id=producto.id) }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Cantidad vendida</label>
+                        <input type="number" name="cantidad" class="form-control"
+                               required min="1" max="{{ stock.cantidad }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ label_precio }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ valor_precio|clp }}"
+                                   disabled>
+                        </div>
+                        <small class="text-muted">
+                            Se usa el {{ label_precio|lower }} configurado para esta tienda.
+                        </small>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Forma de pago</label>
+                        <div class="form-check">
+                          <input class="form-check-input"
+                                 type="radio"
+                                 name="tipo_pago"
+                                 id="pago_contado"
+                                 value="contado"
+                                 checked>
+                          <label class="form-check-label" for="pago_contado">
+                            Contado
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input"
+                                 type="radio"
+                                 name="tipo_pago"
+                                 id="pago_cuotas"
+                                 value="cuotas">
+                          <label class="form-check-label" for="pago_cuotas">
+                            En cuotas
+                          </label>
+                        </div>
+                        <div class="mt-2">
+                          <label class="form-label small mb-1">Cantidad de cuotas</label>
+                          <input type="number"
+                                 name="cuotas_totales"
+                                 class="form-control form-control-sm"
+                                 min="2"
+                                 placeholder="Ej: 3, 6, 12">
+                          <small class="text-muted">
+                            Solo se usa si eliges "En cuotas".
+                          </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                  <div class="col-md-4 ms-auto">
+                    <button type="submit" class="btn btn-accent w-100">
+                        Guardar venta
+                    </button>
+                  </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

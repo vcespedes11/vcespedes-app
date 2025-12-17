@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1 text-light">
+        Ventas de {{ tienda.nombre }}
+      </h1>
+      <p class="small mb-0 text-secondary">
+        Aquí puedes revisar y eliminar ventas equivocadas.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('tiendas_detalle', tienda_id=tienda.id) }}"
+         class="btn btn-outline-light btn-sm">
+        ← Volver a inventario
+      </a>
+    </div>
+  </div>
+
+  <div class="card card-panel">
+    <div class="card-body">
+      {% if ventas %}
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-end">Total venta</th>
+                <th class="text-end">Tipo pago</th>
+                <th class="text-end">Cuotas</th>
+                <th class="text-end">Pagado</th>
+                <th class="text-end">Saldo</th>
+                <th class="text-end">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in ventas %}
+                {# Valores por defecto seguros para cuando aún no exista info de cuotas #}
+                {% set tipo_pago = v.tipo_pago or 'contado' %}
+                {% set cuotas_totales = v.cuotas_totales or 0 %}
+                {% set monto_pagado = v.monto_pagado or 0 %}
+                {% set cuotas_pagadas = v.cuotas_pagadas or 0 %}
+                {% set saldo = (v.total or 0) - monto_pagado %}
+
+                <tr>
+                  <td class="small">
+                    {{ v.fecha.strftime('%d-%m-%Y %H:%M') }}
+                  </td>
+                  <td>
+                    {{ v.producto_codigo_snapshot or v.producto.codigo }} ·
+                    {{ v.producto_nombre_snapshot or v.producto.nombre }}
+                  </td>
+                  <td class="text-end">
+                    {{ v.cantidad }}
+                  </td>
+                  <td class="text-end">
+                    ${{ v.total|clp }}
+                  </td>
+                  <td class="text-end">
+                    {% if tipo_pago == 'cuotas' %}
+                      Cuotas
+                    {% else %}
+                      Contado
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if tipo_pago == 'cuotas' %}
+                      {{ cuotas_pagadas }}/{{ cuotas_totales }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if tipo_pago == 'cuotas' %}
+                      ${{ monto_pagado|clp }}
+                    {% else %}
+                      ${{ v.total|clp }}
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if tipo_pago == 'cuotas' %}
+                      ${{ saldo|clp }}
+                    {% else %}
+                      $0
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    <form method="POST"
+                          action="{{ url_for('tiendas_eliminar_venta',
+                                             tienda_id=tienda.id,
+                                             venta_id=v.id) }}"
+                          onsubmit="return confirm('¿Eliminar esta venta y devolver el stock?');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        Eliminar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="small mb-0 text-secondary">
+          Esta tienda aún no tiene ventas registradas.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

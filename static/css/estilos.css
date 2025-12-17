@@ -1,0 +1,85 @@
+/* Fondo principal oscuro con tonos verdes */
+.bg-main {
+    background: radial-gradient(circle at top, #14271c 0, #050708 60%);
+    color: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* Barra superior, verde muy oscuro */
+.bg-navbar {
+    background-color: #08120c;
+}
+
+/* Color de acento (verde tipo catálogo) */
+.text-accent {
+    color: #6fcf97; /* verde suave */
+}
+
+.btn-accent {
+    background-color: #6fcf97;
+    border-color: #6fcf97;
+    color: #08120c;
+}
+
+.btn-accent:hover {
+    background-color: #81d9a5;
+    border-color: #81d9a5;
+    color: #08120c;
+}
+
+/* Paneles / tarjetas */
+.card-panel {
+    background: rgba(10, 14, 12, 0.97);
+    border: 1px solid rgba(111, 207, 151, 0.18);
+    border-radius: 1rem;
+}
+
+/* Hero con degradado verde oscuro */
+.hero-panel {
+    background: linear-gradient(
+        135deg,
+        rgba(10, 16, 13, 0.98),
+        rgba(11, 37, 24, 0.95)
+    );
+    border-radius: 1.5rem;
+    border: 1px solid rgba(111, 207, 151, 0.35);
+}
+
+.hero-knife-placeholder {
+    height: 220px;
+    border-radius: 1.25rem;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Efecto hover en atajos */
+.hover-card {
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
+                border-color 0.15s ease-out;
+}
+
+.hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.45);
+    border-color: rgba(111, 207, 151, 0.85);
+}
+/* Hacer que los textos 'muted' se vean más claros en el fondo oscuro */
+.text-muted {
+    color: #d0d7dd !important;  /* gris claro, mejor contraste */
+}
+
+/* Que el texto dentro de las tarjetas se vea bien */
+.card-panel {
+    color: #f5f5f5;
+}
+/* Ajustar color del botón 'Ver' al verde VCESPEDES */
+.btn-outline-success {
+    color: #38945a; /* verde tipo catálogo */
+    border-color: #38945a;
+}
+.btn-outline-success:hover {
+    background-color: #38945a;
+    color: #0b0b0b;
+}
