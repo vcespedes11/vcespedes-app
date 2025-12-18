@@ -1,0 +1,286 @@
+[
+  {
+    "id": 12,
+    "marca": "Kia",
+    "modelo": "Sorento",
+    "anio": 2012,
+    "patente": "PFWC-73",
+    "km": 115188,
+    "ultimo_mant": "",
+    "prox_mant_km": 0,
+    "notas": "",
+    "foto": "Kia Sorento 2012.png",
+    "rev_tecnica_venc": "30-06-2026",
+    "permiso_circ_venc": "31-03-2026",
+    "seguro_obl_venc": "31-03-2026",
+    "mant": {
+      "aceite": {
+        "ultimo_km": 112000,
+        "ultimo_fecha": "05-10-2025",
+        "proximo_km": 127000,
+        "intervalo_km": 15000,
+        "observaciones": ""
+      },
+      "filtro_aceite": {
+        "ultimo_km": 112000,
+        "ultimo_fecha": "05-10-2025",
+        "proximo_km": 127000,
+        "intervalo_km": 15000,
+        "observaciones": ""
+      },
+      "filtro_combustible": {
+        "ultimo_km": 112000,
+        "ultimo_fecha": "05-10-2025",
+        "proximo_km": 127000,
+        "intervalo_km": 15000,
+        "observaciones": ""
+      },
+      "filtro_aire": {
+        "ultimo_km": 112000,
+        "ultimo_fecha": "05-10-2025",
+        "proximo_km": 127000,
+        "intervalo_km": 15000,
+        "observaciones": ""
+      },
+      "filtro_polen": {
+        "ultimo_km": 112000,
+        "ultimo_fecha": "05-10-2025",
+        "proximo_km": 127000,
+        "intervalo_km": 15000,
+        "observaciones": ""
+      },
+      "pastillas_freno": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0,
+        "intervalo_km": 0,
+        "observaciones": ""
+      },
+      "correa_distribucion": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0,
+        "intervalo_km": 0,
+        "observaciones": ""
+      }
+    },
+    "color_a": "#14b8a6",
+    "color_b": "#eab308"
+  },
+  {
+    "id": 13,
+    "marca": "Kia",
+    "modelo": "Sportage",
+    "anio": 2012,
+    "patente": "SVKZ-21",
+    "km": 150000,
+    "ultimo_mant": "",
+    "prox_mant_km": 0,
+    "notas": "",
+    "foto": "kia sportage 2012.png",
+    "rev_tecnica_venc": "",
+    "permiso_circ_venc": "",
+    "seguro_obl_venc": "",
+    "mant": {
+      "aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_combustible": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aire": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_polen": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "pastillas_freno": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "correa_distribucion": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      }
+    },
+    "color_a": "#8b5cf6",
+    "color_b": "#06b6d4"
+  },
+  {
+    "id": 14,
+    "marca": "Chevrolet",
+    "modelo": "Trax",
+    "anio": 2016,
+    "patente": "LWSW-60",
+    "km": 100000,
+    "ultimo_mant": "",
+    "prox_mant_km": 0,
+    "notas": "",
+    "foto": "chevrolet trax 2016.png",
+    "rev_tecnica_venc": "",
+    "permiso_circ_venc": "",
+    "seguro_obl_venc": "",
+    "mant": {
+      "aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_combustible": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aire": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_polen": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "pastillas_freno": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "correa_distribucion": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      }
+    },
+    "color_a": "#60a5fa",
+    "color_b": "#fb7185"
+  },
+  {
+    "id": 15,
+    "marca": "Hyundai",
+    "modelo": "Veracruz",
+    "anio": 2009,
+    "patente": "GDSH-85",
+    "km": 180000,
+    "ultimo_mant": "",
+    "prox_mant_km": 0,
+    "notas": "",
+    "foto": "Hyundai_Veracruz_2009.PNG",
+    "rev_tecnica_venc": "",
+    "permiso_circ_venc": "",
+    "seguro_obl_venc": "",
+    "mant": {
+      "aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_combustible": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aire": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_polen": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "pastillas_freno": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "correa_distribucion": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      }
+    },
+    "color_a": "#0ea5e9",
+    "color_b": "#ef4444"
+  },
+  {
+    "id": 16,
+    "marca": "Chevrolet",
+    "modelo": "Trax",
+    "anio": 2017,
+    "patente": "RXLH-47",
+    "km": 66850,
+    "ultimo_mant": "",
+    "prox_mant_km": 0,
+    "notas": "",
+    "foto": "chevrolet trax 2016.png",
+    "rev_tecnica_venc": "",
+    "permiso_circ_venc": "",
+    "seguro_obl_venc": "",
+    "mant": {
+      "aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aceite": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_combustible": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_aire": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "filtro_polen": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "pastillas_freno": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      },
+      "correa_distribucion": {
+        "ultimo_km": 0,
+        "ultimo_fecha": "",
+        "proximo_km": 0
+      }
+    },
+    "color_a": "#22c55e",
+    "color_b": "#f59e0b"
+  }
+]

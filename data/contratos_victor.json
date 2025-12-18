@@ -1,0 +1,31 @@
+[
+  {
+    "reserva_id": 47,
+    "estado": "borrador",
+    "observaciones": "",
+    "inicio_iso": "2025-10-02",
+    "fin_iso": "2025-10-05",
+    "inicio": "02-10-2025",
+    "fin": "05-10-2025",
+    "dias": 4,
+    "precio_dia": 50000,
+    "precio_dia_str": "50.000",
+    "total": 200000,
+    "total_str": "200.000",
+    "cliente": {
+      "nombre": "jose",
+      "apellido": "cespedes",
+      "rut": "18.234.523-3",
+      "nacionalidad": "chilena",
+      "telefono": "995138187",
+      "email": "vcespedes1169@gmail.com"
+    },
+    "vehiculo": {
+      "marca": "",
+      "modelo": "jhjhghgj",
+      "anio": "",
+      "patente": "hggjcgjf"
+    },
+    "id": 1
+  }
+]

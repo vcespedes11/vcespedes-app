@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "nombre": "Vladimir",
+    "apellido": "Jarpa",
+    "rut": "21.276.761-1",
+    "telefono": "+56934556163",
+    "email": "vladimir.jarpa@gmail.com",
+    "cargo": "Encargado De Vehiculos",
+    "estado": "activo",
+    "nota": "horario flexible"
+  }
+]

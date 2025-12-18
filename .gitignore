@@ -1,6 +1,4 @@
-
-# Ignorar base de datos local
-instance/*.db
-instance/vcespedes.db
+venv/
 __pycache__/
+*.pyc
 .DS_Store
